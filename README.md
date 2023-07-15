@@ -1,2 +1,2 @@
-# Cpp Codes for Gstreamer based Rtsp Server and Client
+# Gstreamer based Rtsp Server/Client using Cpp
 Cpp codes for Gstreamer based RTSP server and client
