@@ -11,7 +11,7 @@ class RtspServer
 {
 public:
   RtspServer(string pipeline);
-  void RtspServerInit(bool setcallback, const gchar *mountpoint);
+  void RtspServerInit(bool setcallback, const gchar *mountpoint, char *port);
   void RtspServerAddUser(string user, string password, bool access_perm, bool construct_perm);
   int RtspStart();
   void RtspStop();

@@ -3,13 +3,7 @@
 #include <memory>
 #include "Gstreamer.h"
 
-#define DEFAULT_RTSP_PORT "8554"
-
-static char *port = (char *) DEFAULT_RTSP_PORT;
-
-
-gboolean RtspServer::SignalHandler(gpointer user_data)
-{
+gboolean RtspServer::SignalHandler(gpointer user_data) {
   GMainLoop *loop = (GMainLoop *) user_data;
   cout << "RtspServer: Stopping" << endl;
 
@@ -19,13 +13,13 @@ gboolean RtspServer::SignalHandler(gpointer user_data)
   return TRUE;
 }
 
-gboolean RtspServer::RemoveFunc(GstRTSPSessionPool * pool, GstRTSPSession * session, GstRTSPServer * server)
-{
+gboolean RtspServer::RemoveFunc(GstRTSPSessionPool *pool, 
+                                GstRTSPSession *session, 
+                                GstRTSPServer *server) {
   return GST_RTSP_FILTER_REMOVE;
 }
 
-gboolean RtspServer::RemoveSessions(GstRTSPServer * server)
-{
+gboolean RtspServer::RemoveSessions(GstRTSPServer * server) {
   GstRTSPSessionPool *pool;
 
   g_print("RtspServer: Removing all sessions\n");
@@ -37,8 +31,7 @@ gboolean RtspServer::RemoveSessions(GstRTSPServer * server)
   return FALSE;
 }
 
-gboolean RtspServer::PoolCleanup(GstRTSPServer * server)
-{
+gboolean RtspServer::PoolCleanup(GstRTSPServer * server) {
   GstRTSPSessionPool *pool;
   g_print("RtspServer: Pool Cleanup\n");
   pool = gst_rtsp_server_get_session_pool(server);
@@ -49,8 +42,7 @@ gboolean RtspServer::PoolCleanup(GstRTSPServer * server)
 }
 
 /* called when a stream has received an RTCP packet from the client */
-void RtspServer::OnSsrcActive(GObject * session, GObject * source, GstRTSPMedia * media)
-{
+void RtspServer::OnSsrcActive(GObject * session, GObject * source, GstRTSPMedia * media) {
   GstStructure *stats;
 
   GST_INFO("source %p in session %p is active", source, session);
@@ -67,8 +59,7 @@ void RtspServer::OnSsrcActive(GObject * session, GObject * source, GstRTSPMedia 
   }
 }
 
-void RtspServer::OnSenderSsrcActive(GObject * session, GObject * source, GstRTSPMedia * media)
-{
+void RtspServer::OnSenderSsrcActive(GObject * session, GObject * source, GstRTSPMedia * media) {
   GstStructure *stats;
 
   GST_INFO("source %p in session %p is active", source, session);
@@ -87,8 +78,7 @@ void RtspServer::OnSenderSsrcActive(GObject * session, GObject * source, GstRTSP
 
 /* signal callback when the media is prepared for streaming. We can get the
  * session manager for each of the streams and connect to some signals. */
-void RtspServer::MediaPreparedCb(GstRTSPMedia * media)
-{
+void RtspServer::MediaPreparedCb(GstRTSPMedia * media) {
   guint i, n_streams;
 
   n_streams = gst_rtsp_media_n_streams(media);
@@ -113,8 +103,7 @@ void RtspServer::MediaPreparedCb(GstRTSPMedia * media)
   }
 }
 
-void RtspServer::MediaConfigureCb(GstRTSPMediaFactory * factory, GstRTSPMedia * media)
-{
+void RtspServer::MediaConfigureCb(GstRTSPMediaFactory * factory, GstRTSPMedia * media) {
   /* connect our prepared signal so that we can see when this media is
    * prepared for streaming */
   g_signal_connect(media, "prepared",(GCallback) MediaPreparedCb, factory);
@@ -124,7 +113,7 @@ RtspServer::RtspServer(string pipeline) {
     m_pipeline = g_strdup_printf(pipeline.c_str());
 }
 
-void RtspServer::RtspServerInit(bool setcallback, const gchar *mountpoint) {
+void RtspServer::RtspServerInit(bool setcallback, const gchar *mountpoint, char *port) {
   gst_init(NULL, NULL);
 
   loop = g_main_loop_new(NULL, FALSE);
@@ -193,12 +182,3 @@ RtspServer::~RtspServer() {
   RtspStop();
 }
 
-int main(int argc, char *argv[]) {
-  string pipeline = " ( v4l2src ! videoscale ! "
-                        "capsfilter caps=video/x-raw ! videoconvert ! clockoverlay ! "
-                        "queue ! x264enc ! rtph264pay name=pay0 pt=96 ) ";
-  RtspServer rtspServer(pipeline);
-  rtspServer.RtspServerInit(false, "/test");
-  rtspServer.RtspServerAddUser("admin", "password", true, true);
-  rtspServer.RtspStart();
-}

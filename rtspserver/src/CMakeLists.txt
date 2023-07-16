@@ -18,7 +18,7 @@ link_directories(
         ${GSTREAMER_LIBRARY_DIRS}
 )
 
-add_executable(rtspserver Gstreamer.cpp)
+add_executable(rtspserver main.cpp Gstreamer.cpp)
 #add_executable(rtspserver test-auth.c)
 
 target_link_libraries(rtspserver ${GSTREAMER_LIBRARIES})
